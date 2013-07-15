@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+{%- block content %}
+
+    {% if form %}
+    {{ wtf.quick_form(
+        form, action="/settings", 
+    ) }}
+    {% endif %}
+
+{%- endblock content %}
