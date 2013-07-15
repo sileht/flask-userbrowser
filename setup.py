@@ -46,7 +46,6 @@ setup(
     include_package_data=True,
     packages=['userbrowser'],
     package_data={'userbrowser': ['templates/*',
-                                  'contrib/*'
                                   'schema.sql']},
 
     platforms='any',

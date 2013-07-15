@@ -39,6 +39,7 @@ from wtforms.validators import DataRequired
 from passlib.hash import sha256_crypt
 
 app = Flask(__name__)
+app.config['BOOTSTRAP_FONTAWESOME'] = True
 
 Bootstrap(app)
 AI = AutoIndex(app, add_url_rules=False)
@@ -175,7 +176,7 @@ def browser(path='/'):
 
 def load_config(filepath):
     app.config.from_pyfile(os.path.abspath(filepath))
-    app.secret_key = app.config.get("SESSION_KEY", "what?")
+    app.secret_key = app.config["SESSION_KEY"]
     app.debug = app.config.get("DEBUG", False)
     init_db()
 
