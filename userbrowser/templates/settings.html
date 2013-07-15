@@ -1,11 +1,9 @@
 {% extends "base.html" %}
 {%- block content %}
-
-    {% if form %}
-    {{ wtf.quick_form(
-        form, action="/settings", 
-        buttons = [('submit', 'primary', 'Sauvegarder')]
-    ) }}
-    {% endif %}
-
+<h2>Paramètrage <i class="icon-pencil"></i></h2>
+{{ my_quick_form(
+    form, action="/settings", class="form form-inline",
+    buttons = [('submit', 'primary', 'Sauvegarder')]
+) }}
+</span>
 {%- endblock content %}

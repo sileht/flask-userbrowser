@@ -1,12 +1,65 @@
 {% import "bootstrap_wtf.html" as wtf %}
 {% extends "bootstrap_responsive.html" %}
 
-{%- block body_content %}
-<div class="navbar navbar-fixed-top">
-    <div class="navbar-inner">
-        <div class="container-fluid">
-            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
+{%- macro my_inline_field(field) %}
+{%- with required = "required" if kwargs['required'] or field.flags.required else "" -%}
+<span class="control-group {% if field.errors %}error{% endif %}">
+    {{field(placeholder=field.label.text, required=required, **kwargs)}}
+</span>
+{%- endwith %}
+{%- endmacro %}   
 
+{% macro my_quick_form(form, action=".", method="post", class="form form-horizontal", buttons = [('submit', 'primary', 'Save')], enctype=None) %}
+<form action="{{action}}" method="{{method}}" class="{{class}}"{% if enctype %} enctype="{{enctype}}"{% endif %}>
+  {{ wtf.form_errors(form, 'only') }}
+  {{ form.hidden_tag() }}
+  {%- for field in form %}
+  {% if not field|bootstrap_is_hidden_field %}
+  {{ my_inline_field(field) }}
+  {%- endif %}
+  {%- endfor %}
+  {% for name, type, text in buttons %}
+      <button name="{{name}}" type="submit" class="btn btn-{{type}}">{{text}}</button>
+  {%- endfor %}
+
+  <br />
+
+  {%- for field in form %}
+  {% if not field|bootstrap_is_hidden_field %}
+  <span class="control-group {% if field.errors %}error{% endif %}">
+      <span class="controls">
+          {%- if field.errors %}
+          {%- for error in field.errors %}
+          <span class="help-inline">{{error}}</span>
+          {%- endfor %}
+          {%- endif %}
+      </span>
+  </span>
+  {%- endif %}
+  {%- endfor %}
+
+</form>
+{%- endmacro %}
+
+
+{%- block style_navbar_padding %}
+<style>
+body {
+    padding-top: 30px;
+}
+.footer {
+  margin-top: 15px;
+  padding: 5px 0 5px;
+  border-top: 1px solid #e5e5e5;
+}
+</style>
+{%- endblock style_navbar_padding %}
+
+{%- block body_content %}
+<div class="container">
+    <div class="navbar">
+        <div class="navbar-inner">
+            <a class="btn btn-navbar" data-toggle="collapse" data-target=".nav-collapse">
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
                 <span class="icon-bar"></span>
@@ -23,14 +76,15 @@
         </div>
     </div>
 </div>
-<div class="container-fluid">
-    <div class="row-fluid">
-        <div class="span12">
-{%- block content %}
-{%- endblock content %} 
-
-
+<div class="container">
+    <div class="row">
+        <div class="span10 offset1">
+            {%- block content %}
+            {%- endblock content %} 
         </div>
+    </div>
+    <div class="footer">
+        <p>userbrowser, <a href="https://github.com/sileht/flask-userbrowser/">source code</a> under GPL 3.0, powered by <a href="http://flask.pocoo.org">Flask</a> and <a href="http://twitter.github.com/bootstrap/">Bootstrap</a></p>
     </div>
 </div>
 {%- endblock body_content %} 

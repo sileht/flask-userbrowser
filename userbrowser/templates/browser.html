@@ -2,20 +2,17 @@
    with context %}
 
 {% extends "base.html" %}
-{%- block head %}
-    {{super()}}
-    <link rel="stylesheet" type="text/css"
-          href="{{ url_for('__autoindex__.static', filename='autoindex.css') }}" />
-{%- endblock head %}
 
 {%- block content %}
-    <table>
+<h2>Mes fichiers <i class="icon-folder-close"></i></h2>
+
+    <table class="table table-striped table-condensed">
       <thead>
         {{ thead() }}
         {% if not curdir.is_root() %}
           <tr>
             <td class="breadcrumb" colspan="4">
-              <h1>{{ breadcrumb(curdir) }}</h1>
+              <span>{{ breadcrumb(curdir) }}</span>
             </td>
           </tr>                                                                               
         {% endif %}

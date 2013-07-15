@@ -1,11 +1,10 @@
 {% extends "base.html" %}
 {%- block content %}
+<h2>Connection <i class="icon-play-circle"></i></h2>
 
-    {% if form %}
-    {{ wtf.quick_form(
-        form, action="/login", 
-        buttons = [('submit', 'primary', 'Se connecter')]
-    ) }}
-    {% endif %}
+{{ my_quick_form(
+    form, action="/login", class="form form-inline",
+    buttons = [('submit', 'primary', 'Se connecter')]
+) }}
 
 {%- endblock content %}
