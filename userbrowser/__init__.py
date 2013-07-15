@@ -81,8 +81,21 @@ class User(UserMixin):
                    [password_hash, self.id])
         db.commit()
 
+    def verify_password(self, password):
+        row = get_db().execute(
+            'select * from users where id = ?',
+            [self.id]).fetchone()
+
+        if not row:
+            return False
+
+        userid, username, password_hash = row
+        if password_hash and \
+                sha256_crypt.verify(password, password_hash):
+            return True
+
     @staticmethod
-    def check_and_get(username, password=None):
+    def get(username):
         row = get_db().execute(
             'select * from users where username = ?',
             [username]).fetchone()
@@ -91,12 +104,10 @@ class User(UserMixin):
             return
 
         userid, username, password_hash = row
-        if password_hash and \
-                sha256_crypt.verify(password, password_hash):
-            return User(userid, username)
+        return User(userid, username)
 
     @staticmethod
-    def get(userid):
+    def get_by_id(userid):
         cur = get_db().execute('select * from users where id = ?', [userid])
         row = cur.fetchone()
         if row:
@@ -106,7 +117,7 @@ class User(UserMixin):
 
 @login_manager.user_loader
 def load_user(userid):
-    return User.get(str(userid))
+    return User.get_by_id(str(userid))
 
 
 @app.route("/")
@@ -123,14 +134,35 @@ def login():
         username = TextField("Login", validators=[DataRequired()])
         password = PasswordField("Mot de passe", validators=[DataRequired()])
 
+        def __init__(self, *args, **kwargs):
+            Form.__init__(self, *args, **kwargs)
+            self.user = None
+
+        def validate(self):
+            rv = Form.validate(self)
+            if not rv:
+                return False
+
+            if not form.username.data or not form.password.data:
+                return False
+
+            user = User.get(str(form.username.data))
+            if not user:
+                self.username.errors.append('Utilisateur inconnu')
+                return False
+
+            if not user.verify_password(form.password.data):
+                self.password.errors.append('Mot de passe incorrect')
+                return False
+
+            self.user = user
+            return True
+
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.check_and_get(str(form.username.data),
-                                  form.password.data)
-        if user:
-            login_user(user)
-            flash("Connection réussie")
-            return redirect('browser')
+        login_user(form.user)
+        flash("Connection réussie")
+        return redirect('browser')
     return render_template("login.html",
                            form=form)
 
@@ -142,14 +174,25 @@ def settings():
         password = PasswordField("Mot de passe")
         password_bis = PasswordField("Mot de passe (Bis)")
 
+        def validate(self):
+            rv = Form.validate(self)
+            if not rv:
+                return False
+
+            if form.password.data != form.password_bis.data:
+                self.password_bis.errors.append(
+                    'Les mot de passe ne correspondent pas')
+                return False
+
+            return True
+
     form = SettingsForm()
     if form.validate_on_submit():
-        if form.password.data == form.password_bis.data:
-            current_user.set_password(form.password.data)
-            flash("Mot de passe changé")
-            return redirect('/browser')
-        else:
-            flash("Les mot de passe ne corresponds pas")
+        current_user.set_password(form.password.data)
+        flash("Mot de passe changé")
+        return redirect('/browser')
+    else:
+        flash("Les mot de passe ne corresponds pas")
 
     return render_template("settings.html",
                            form=form)
@@ -169,7 +212,6 @@ def logout():
 def browser(path='/'):
     root = os.path.join(app.config.get("USERS_DIR", "users"),
                         current_user.username)
-    print root
     return AI.render_autoindex(path=path, browse_root=root,
                                template='browser.html', endpoint='browser')
 
