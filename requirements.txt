@@ -1,6 +1,6 @@
 Flask
 Flask_AutoIndex
-Flask_Bootstrap
+Flask_Bootstrap<3.0.0
 Flask_Login
 Flask_Shelve
 Flask_WTF
